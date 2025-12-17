@@ -3,6 +3,8 @@ const morgan = require('morgan');
 const cors = require('cors');
 const path = require('path');
 const killPort = require('kill-port');
+const { ethers } = require('ethers');
+
 
 require('dotenv').config();
 
@@ -43,25 +45,63 @@ const checkPort = async (port, maxPort = 65535) => {
     require('./config/dbHandler.js').connect();
 
     /**
-     * @route    [HTTP_METHOD] /api/endpoint
-     * @desc     [Short summary of what this endpoint does, e.g., Reads or sets value in smart contract]
-     * @author   [Your Name]
-     * @access   [public/private/auth-required]
-     * @param    {Request}  req  - Express request object. [Describe relevant body/query/params fields]
+     * @route    GET /api/AdityaSurveApiTest
+     * @desc     Fetch basic information from a sample smart contract (DAI stablecoin)
+     * @author   Aditya Surve
+     * @access   Public
+     * @param    {Request}  req  - Express request object.
      * @param    {Response} res  - Express response object.
-     * @returns  {JSON}          [Describe the JSON structure returned]
-     * @throws   [Error conditions, e.g., 400 on invalid input, 500 on contract failure]
+     * @returns  {JSON}{ name, symbol, totalSupplyRaw } - Basic contract information.
+     * @throws   {500} - Server error if unable to fetch contract data.
      *
      * @example
      * // Example request
-     * curl -X POST http://localhost:3001/contract/value -H "Content-Type: application/json" -d '{"value": 42}'
+     * http://localhost:3009/api/AdityaSurveApiTest
      *
      * // Example response
      * {
-     *   "message": "Value updated",
-     *   "txHash": "0x..."
+     *   "name": "Dai Stablecoin",
+     *   "symbol": "DAI",
+     *   "totalSupplyRaw": "4325347679305227212992992621"
      * }
      */
+
+    app.get('/api/AdityaSurveApiTest', async (req, res) => {
+    try {
+        // Using ethereum public node as RPC URL
+        const RPC_URL = process.env.RPC_URL;
+        // Got this address from Etherscan, it's the DAI stablecoin 
+        const DAI_ADDRESS = '0x6B175474E89094C44Da98b954EedeAC495271d0F';
+        // Here I am doing a read-only call to fetch some basic info about the DAI contract
+        const ERC20_ABI = [
+            'function name() view returns (string)',
+            'function symbol() view returns (string)',
+            'function totalSupply() view returns (uint256)',
+        ];
+
+        const provider = new ethers.JsonRpcProvider(RPC_URL);
+        const contract = new ethers.Contract(DAI_ADDRESS, ERC20_ABI, provider);
+
+        const name = await contract.name();
+        const symbol = await contract.symbol();
+        const totalSupply = await contract.totalSupply();
+
+        const result = {
+            name,
+            symbol,
+            totalSupplyRaw: totalSupply.toString(),
+        };
+
+        console.log('[AdityaSurveApiTest] Smart contract data:', result);
+
+        res.json(result);
+    } 
+    catch (error) {
+        console.error('[AdityaSurveApiTest] Error fetching contract data:', error);
+        res.status(500).json({ error: 'Failed to fetch contract data' });
+    }
+});
+
 
     // Serve static files in production
     if (process.env.NODE_ENV === 'production') {
