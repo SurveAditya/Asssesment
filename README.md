@@ -72,6 +72,16 @@ Handle errors gracefully where possible.
 <img width="546" height="635" alt="image" src="https://github.com/user-attachments/assets/6fde1341-c3b2-4bb8-a60f-a4a140e77c46" />
 
 
+---
+
+
+## Video:
+
+https://github.com/user-attachments/assets/75e43f75-4278-4a2f-b8a6-289dddd46f74
+
+
+
+
 
 ## 🚀 Quick Start Guide
 
